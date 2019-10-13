@@ -1,0 +1,37 @@
+#
+# Standard Maven .gitignore
+#
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+#
+# IntelliJ
+#
+*.iml
+.idea/*
+!.idea/runConfigurations/
+
+#
+# Visual Studio Code
+#
+.settings/
+.classpath
+.project
+.vscode/settings.json
+data/out
+data/lang
+data/in/*.class
+data/in/*.log
+experiments
+liang10e
+lib
+src/main/resources/orig.grammar
+src/main/resources/s copy 2.grammar
+src/main/resources/s copy.grammar

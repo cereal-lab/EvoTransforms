@@ -1,0 +1,92 @@
+<start> ::= (strCons <initialDeclStmt> <termStrList>)
+#
+# 50/50 chances to have single instruction or more
+<termStrList> ::= (singleton <termStmt>)
+<termStrList> ::= (strCons <stmt> <termStrList>)
+#
+# 1 of 2 (prev 2 of 5) a chance to select a loop
+<termStmt> ::= <termIfStmt> | <termWhileStmt>
+<termWhileStmt> ::= (while <boolExpr> <termLoopStmts>) | (doWhile <termLoopStmts> <boolExpr>)
+<termIfStmt> ::= (if <boolExpr> <termStmts>) | (ifElse <boolExpr> <termStmts> <stmts>) | (ifElse <boolExpr> <stmts> <termStmts>) 
+#
+#
+#here we increase chance of term node metaStmtsRule
+# chances for append/prepend is 2 of 3
+#<termStmts> ::= (prepend <stmt> <metaStmtsRule>) | (append <metaStmtsRule> <stmt>) | <termStmtsRec>
+#termStmtsRec ::= <termStmt> | (prepend <stmt> <termStmts>) | (append <termStmts> <stmt>)
+#
+# chances to terminate is 1 of 2
+<termStmts> ::= <metaStmtsRule> | <termStmtsRec>
+<termStmtsRec> ::= <termStmt> | (prepend <stmt> <termStmts>) | (append <termStmts> <stmt>)
+#
+# chances to terminate is 1 of 2
+<termLoopStmts> ::= <metaStmtsRule> | <termLoopStmtsRec>
+<termLoopStmtsRec> ::= <termLoopStmt> | (prepend <loopStmt> <termLoopStmts>) | (append <termLoopStmts> <loopStmt>)
+#
+<termLoopStmt> ::= <termLoopIfStmt> | <termLoopWhileStmt>
+<termLoopIfStmt> ::= (if <boolExpr> <termLoopStmts>) | (ifElse <boolExpr> <termLoopStmts> <loopStmts>) | (ifElse <boolExpr> <loopStmts> <termLoopStmts>)
+<termLoopWhileStmt> ::= (while <boolExpr> <termLoopStmts>) | (doWhile <termLoopStmts> <boolExpr>)
+#
+#
+<initialDeclStmt> ::= (toStmt <initialDecl>)
+<initialDecl> ::= (declWithInit <type> <metaVarOnly> <mathExprWithoutMetaVar>)
+<metaVarOnly> ::= (metaVar)
+#
+#<start> ::= <strList>
+#<strList> ::= (strEmptyList) 
+#
+<strList> ::= (singleton <stmt>)
+<strList> ::= (strCons <stmt> <strList>)
+#
+#prebound meta variables in initial for pattern matching
+#extends this for experimentation with meta-vars
+#<type> ::= (javaType)
+<type> ::= (metaType)
+<var> ::= (metaVar) | (contextVar)
+<decl> ::= (declWithInit <type> <var> <mathExpr>)
+#
+#extend this with gp generated decls
+#<expr> ::= <boolExpr> | <mathExpr>
+#
+#important that the chance to go to bool comp is 50% here only
+#<boolExpr> ::= (metaCondExpr) | <boolExprComp>
+#<boolExprComp> ::= (true) | <boolExprCompRec> 
+<boolExpr> ::= (ls <mathExpr> <mathExpr>) | (eq <mathExpr> <mathExpr>) | <boolExprCompRec>
+<boolExprCompRec> ::= (not <boolExpr>) | (and <boolExpr> <boolExpr>)
+<assignExpr> ::= (assign <var> <mathExpr>)
+#
+#<mathExprWithoutMetaVar> ::= (number) | (contextVar) | (initExpr) | <mathExprWithoutMetaVarRec>
+<mathExprWithoutMetaVar> ::= (number) | (contextVar) | <mathExprWithoutMetaVarRec>
+<mathExprWithoutMetaVarRec> ::= (add <mathExprWithoutMetaVar> <mathExprWithoutMetaVar>) | (sub <mathExprWithoutMetaVar> <mathExprWithoutMetaVar>)
+#
+#again - a chance to go rec is 25%
+#<mathExpr> ::= (number) | <var> | (metaExpr) | <mathExprRec>
+<mathExpr> ::= (number) | <var> | <mathExprRec>
+#<mathExpr> ::= <assignExpr>
+<mathExprRec> ::= (add <mathExpr> <mathExpr>) | (sub <mathExpr> <mathExpr>)
+#
+# term statement is more preferable - 50% chance - prevents infinite tree generation
+<stmt> ::= (toStmt <castableToStmt>) | <stmtRec>
+<stmtRec> ::= (if <boolExpr> <stmts>) | (ifElse <boolExpr> <stmts> <stmts>) | (while <boolExpr> <loopStmts>) | (doWhile <loopStmts> <boolExpr>)
+#
+#<castableToStmt> ::= <assignExpr> | (incExpr)
+<castableToStmt> ::= <assignExpr>
+#
+<stmts> ::= (metaStmts) | (toStmt <castableToStmt>) | <stmtsRec>
+<stmtsRec> ::= <stmt> | (prepend <stmt> <stmts>) | (append <stmts> <stmt>)
+#
+#building grammar in reverse order 
+#based on requirement that metaStmts should mandatory be in our tree
+#
+#this is final rule
+<metaStmtsRule> ::= (metaStmts) 
+#
+#1 of 3 chance to append, then again 1 of 3 chance to select 
+#<termLoopStmts> ::= <termLoopStmt>
+#<termLoopStmts> ::= (prepend <loopStmt> <termLoopStmts>) | (append <termLoopStmts> <loopStmt>)
+<loopStmt> ::= (toStmt <castableToStmt>) | <loopStmtRec>
+<loopStmtRec> ::= <loopStmtBreak> | (if <boolExpr> <loopStmts>) | (ifElse <boolExpr> <loopStmts> <loopStmts>) | (while <boolExpr> <loopStmts>) | (doWhile <loopStmts> <boolExpr>)
+<loopStmtBreak> ::= (break) | (continue)
+#
+<loopStmts> ::= (metaStmts) | (toStmt <castableToStmt>) | <loopStmtsRec>
+<loopStmtsRec> ::= <loopStmt> | (prepend <loopStmt> <loopStmts>) | (append <loopStmts> <loopStmt>)

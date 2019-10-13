@@ -1,0 +1,327 @@
+# Threads and Seeds
+#todo think about speedup by using more threads - organize evolution correctly
+evalthreads = 1
+breedthreads = 1
+#evalthreads = auto
+#breedthreads = auto
+seed.0 = time
+#seed.1 = time
+# Checkpointing
+checkpoint = false
+checkpoint-modulo = 1
+checkpoint-prefix = ec
+# The basic setup
+state = ec.simple.SimpleEvolutionState
+finish = ec.simple.SimpleFinisher
+exch = ec.simple.SimpleExchanger
+breed = ec.simple.SimpleBreeder
+eval = ec.simple.SimpleEvaluator
+stat = ec.simple.SimpleStatistics
+pop = ec.Population
+pop.subpops = 1
+pop.subpop.0 = ec.Subpopulation
+pop.subpop.0.duplicate-retries = 0
+
+#pop.subpop.0.size = 1024
+#random 512 trees
+pop.subpop.0.size = 16
+#elitism is disabled 
+#breed.elite.0 = 0
+breed.elite.0 = 1
+stat.file = $data/out/out.stat
+quit-on-run-complete = true
+
+#initialization 
+init = ec.gp.GPInitializer
+generations = 151
+
+#additional stats - koza stats
+#stat.num-children = 1
+#stat.child.0 = ec.gp.koza.KozaShortStatistics
+#stat.child.0.do-depth = true
+#stat.child.0.do-time = true
+#stat.child.0.do-size = true
+#stat.child.0.file = $out2.stat
+
+# we build trees with HalfBuilder
+gp.koza.half.min-depth = 2
+#gp.koza.half.max-depth = 6
+gp.koza.half.max-depth = 10
+gp.koza.half.growp = 0.5
+
+# Types
+# we do not use types - because grammar constraints possible trees 
+# one atomic type nil
+gp.type.a.size = 1
+gp.type.a.0.name = nil
+gp.type.s.size = 0
+
+# Basic Function Set Parameters
+gp.fs.size = 1
+gp.fs.0 = ec.gp.GPFunctionSet
+gp.fs.0.name = f0
+
+# Tree Constraints
+gp.tc.size = 1
+gp.tc.0 = ec.gp.GPTreeConstraints
+gp.tc.0.name = tc0
+gp.tc.0.fset = f0
+gp.tc.0.returns = nil
+gp.tc.0.init = ec.gp.koza.HalfBuilder
+
+# Node Constraints
+#currently we have 21 nodes 
+#ECJ is too verbose
+#we have 0, 1, 2, 3 children nodes - 4 node constraints
+gp.nc.size = 4
+# 0 children
+gp.nc.0 = ec.gp.GPNodeConstraints
+gp.nc.0.name = nc0
+gp.nc.0.returns = nil
+gp.nc.0.size = 0
+# 1 child 
+gp.nc.1 = ec.gp.GPNodeConstraints
+gp.nc.1.name = nc1
+gp.nc.1.returns = nil
+gp.nc.1.size = 1
+gp.nc.1.child.0 = nil
+# 2 children
+gp.nc.2 = ec.gp.GPNodeConstraints
+gp.nc.2.name = nc2
+gp.nc.2.returns = nil
+gp.nc.2.size = 2
+gp.nc.2.child.0 = nil
+gp.nc.2.child.1 = nil
+# 3 children
+gp.nc.3 = ec.gp.GPNodeConstraints
+gp.nc.3.name = nc3
+gp.nc.3.returns = nil
+gp.nc.3.size = 3
+gp.nc.3.child.0 = nil
+gp.nc.3.child.1 = nil
+gp.nc.3.child.2 = nil
+
+# Representation
+pop.subpop.0.species = ec.gp.ge.GESpecies
+pop.subpop.0.species.parser = ec.gp.ge.GrammarParser
+
+pop.subpop.0.species.ind = ec.gp.ge.GEIndividual
+
+pop.subpop.0.species.fitness = ec.gp.koza.KozaFitness
+
+pop.subpop.0.species.min-gene = -128
+pop.subpop.0.species.max-gene = 127
+pop.subpop.0.species.mutation-type = reset
+#pop.subpop.0.species.mutation-prob = 0.01
+pop.subpop.0.species.mutation-prob = 0.1
+pop.subpop.0.species.crossover-type = one
+
+pop.subpop.0.species.genome-size = uniform
+pop.subpop.0.species.min-initial-size = 30
+pop.subpop.0.species.max-initial-size = 40
+
+
+#pop.subpop.0.duplicate-retries = 100
+pop.subpop.0.duplicate-retries = 20
+#grammar
+pop.subpop.0.species.file.0 = s.grammar
+ge.species.file.0 = s.grammar
+
+pop.subpop.0.species.ind.numtrees = 1
+pop.subpop.0.species.ind.tree.0 = ec.gp.GPTree
+pop.subpop.0.species.ind.tree.0.tc = tc0
+
+gp.problem.stack = ec.gp.ADFStack
+gp.adf-stack.context = ec.gp.ADFContext
+
+#custom params
+eval.problem = ec.gp.ge.GEProblem
+eval.problem.problem = edu.usf.csee.cereal.evotransform.StrategoBatchGPProblem
+eval.problem.problem.data = edu.usf.csee.cereal.evotransform.nodes.StrategoGPData
+
+
+# PIPELINE - THIS PIPELINE FOR GP - but WE USE GE
+#MultiBreedingPipeline takes randomly from two sources according to prob
+#10% chance to preserve individual and 90% to go through crossover
+#pop.subpop.0.species.pipe = ec.breed.MultiBreedingPipeline
+#pop.subpop.0.species.pipe.generate-max = false
+#pop.subpop.0.species.pipe.num-sources = 2
+#pop.subpop.0.species.pipe.source.0 = ec.gp.koza.CrossoverPipeline
+#pop.subpop.0.species.pipe.source.0.prob = 0.9
+#pop.subpop.0.species.pipe.source.1 = ec.breed.ReproductionPipeline
+#pop.subpop.0.species.pipe.source.1.prob = 0.1
+
+#NOTE: pipeline does not have mutation in it - discuss do we need mutation or run experiments
+
+# Reproduction
+#NOTE: there is no mutation in pipeline - only crossover of trees
+
+
+#TAKEN from koza.params for future experimentation
+# Point Mutation will use Tournament Selection, try only 1
+# time, have a max depth of 17, and use KozaNodeSelector
+# and GROW for building.  Also, Point Mutation uses a GrowBuilder
+# by default, with a default of min-depth=max-depth=5
+# as shown a ways below
+#gp.koza.mutate.source.0 = ec.select.TournamentSelection
+#gp.koza.mutate.ns.0 = ec.gp.koza.KozaNodeSelector
+#gp.koza.mutate.build.0 = ec.gp.koza.GrowBuilder
+#gp.koza.mutate.maxdepth = 17
+# This is the default for Koza and lil-gp, though it's
+# a little wimpy; on the other hand, a higher number can
+# make things really slow
+#gp.koza.mutate.tries = 1
+# Since GROW is only used for subtree mutation, ECJ uses
+# the Koza-standard subtree mutation GROW values for the
+# default for GROW as a whole.  This default is
+# min-depth=max-depth=5, which I don't like very much,
+# but hey, that's the standard.  
+# This means that if someone decided to use GROW to generate
+# new individual trees, it's also use the defaults below
+# unless he overrided them locally.
+#gp.koza.grow.min-depth = 5
+#gp.koza.grow.max-depth = 5
+
+
+breed.reproduce.source.0 = ec.select.TournamentSelection
+# Crossover
+#gp.koza.xover.source.0 = ec.select.TournamentSelection
+#gp.koza.xover.source.1 = same
+#gp.koza.xover.ns.0 = ec.gp.koza.KozaNodeSelector
+#gp.koza.xover.ns.1 = same
+#gp.koza.xover.maxdepth = 17
+#gp.koza.xover.tries = 1
+
+#CORRECT GE PIPELINE
+pop.subpop.0.species.pipe = ec.breed.BufferedBreedingPipeline
+pop.subpop.0.species.pipe.num-inds = 1
+pop.subpop.0.species.pipe.likelihood = 1.0
+pop.subpop.0.species.pipe.source.0 = ec.vector.breed.VectorMutationPipeline
+pop.subpop.0.species.pipe.source.0.likelihood = 1.0
+pop.subpop.0.species.pipe.source.0.source.0 = ec.gp.ge.breed.GECrossoverPipeline
+pop.subpop.0.species.pipe.source.0.source.0.likelihood = 0.9
+pop.subpop.0.species.pipe.source.0.source.0.source.0 = ec.select.TournamentSelection
+pop.subpop.0.species.pipe.source.0.source.0.source.1 = same
+
+#one wrap
+ge.species.passes = 2
+ge.species.init-scheme = default
+
+# Selection
+select.tournament.size = 5
+
+pop.subpop.0.species.gp-species = ec.gp.GPSpecies
+pop.subpop.0.species.gp-species.fitness = ec.gp.koza.KozaFitness
+pop.subpop.0.species.gp-species.ind = ec.gp.GPIndividual
+pop.subpop.0.species.gp-species.ind.numtrees = 1
+pop.subpop.0.species.gp-species.ind.tree.0 = ec.gp.GPTree
+pop.subpop.0.species.gp-species.ind.tree.0.tc = tc0
+# We'll never use this, so let's set it to Reproduction, which is simple
+pop.subpop.0.species.gp-species.pipe = ec.breed.ReproductionPipeline
+#pop.subpop.0.species.gp-species.pipe.num-sources = 1
+pop.subpop.0.species.gp-species.pipe.source.0 = ec.select.TournamentSelection
+
+# Node Selectors
+#TODO: experiment with chances to select terminal and nonterminal
+#gp.koza.ns.terminals = 0.1
+#gp.koza.ns.nonterminals = 0.9
+#gp.koza.ns.root = 0.0
+
+# Nodes: Function Set
+gp.fs.0 = ec.gp.GPFunctionSet
+gp.fs.0.size = 32
+gp.fs.0.func.0 = edu.usf.csee.cereal.evotransform.nodes.arithm.AddNode
+gp.fs.0.func.0.nc = nc2
+
+gp.fs.0.func.1 = edu.usf.csee.cereal.evotransform.nodes.arithm.SubNode
+gp.fs.0.func.1.nc = nc2
+
+gp.fs.0.func.2 = edu.usf.csee.cereal.evotransform.nodes.arithm.NumberNode
+gp.fs.0.func.2.nc = nc0
+
+gp.fs.0.func.3 = edu.usf.csee.cereal.evotransform.nodes.bool.AndNode
+gp.fs.0.func.3.nc = nc2
+
+gp.fs.0.func.4 = edu.usf.csee.cereal.evotransform.nodes.bool.EqNode
+gp.fs.0.func.4.nc = nc2
+
+gp.fs.0.func.5 = edu.usf.csee.cereal.evotransform.nodes.bool.LessNode
+gp.fs.0.func.5.nc = nc2
+
+gp.fs.0.func.6 = edu.usf.csee.cereal.evotransform.nodes.bool.NotNode
+gp.fs.0.func.6.nc = nc1
+
+gp.fs.0.func.7 = edu.usf.csee.cereal.evotransform.nodes.bool.TrueNode
+gp.fs.0.func.7.nc = nc0
+
+gp.fs.0.func.8 = edu.usf.csee.cereal.evotransform.nodes.list.AppendNode
+gp.fs.0.func.8.nc = nc2
+
+gp.fs.0.func.9 = edu.usf.csee.cereal.evotransform.nodes.list.PrependNode
+gp.fs.0.func.9.nc = nc2
+
+gp.fs.0.func.10 = edu.usf.csee.cereal.evotransform.nodes.meta.ExprNode
+gp.fs.0.func.10.nc = nc0
+
+gp.fs.0.func.11 = edu.usf.csee.cereal.evotransform.nodes.meta.CondNode
+gp.fs.0.func.11.nc = nc0
+
+gp.fs.0.func.12 = edu.usf.csee.cereal.evotransform.nodes.meta.StmtsNode
+gp.fs.0.func.12.nc = nc0
+
+gp.fs.0.func.13 = edu.usf.csee.cereal.evotransform.nodes.meta.VarNode
+gp.fs.0.func.13.nc = nc0
+
+gp.fs.0.func.14 = edu.usf.csee.cereal.evotransform.nodes.stmts.BreakNode
+gp.fs.0.func.14.nc = nc0
+
+gp.fs.0.func.15 = edu.usf.csee.cereal.evotransform.nodes.stmts.ContinueNode
+gp.fs.0.func.15.nc = nc0
+
+gp.fs.0.func.16 = edu.usf.csee.cereal.evotransform.nodes.stmts.DoWhileNode
+gp.fs.0.func.16.nc = nc2
+
+gp.fs.0.func.17 = edu.usf.csee.cereal.evotransform.nodes.stmts.IfElseNode
+gp.fs.0.func.17.nc = nc3
+
+gp.fs.0.func.18 = edu.usf.csee.cereal.evotransform.nodes.stmts.IfNode
+gp.fs.0.func.18.nc = nc2
+
+gp.fs.0.func.19 = edu.usf.csee.cereal.evotransform.nodes.stmts.WhileNode
+gp.fs.0.func.19.nc = nc2
+
+gp.fs.0.func.20 = edu.usf.csee.cereal.evotransform.nodes.stmts.ToStmtNode
+gp.fs.0.func.20.nc = nc1
+
+gp.fs.0.func.21 = edu.usf.csee.cereal.evotransform.nodes.str.ConsNode
+gp.fs.0.func.21.nc = nc2
+
+gp.fs.0.func.22 = edu.usf.csee.cereal.evotransform.nodes.str.EmptyListNode
+gp.fs.0.func.22.nc = nc0
+
+gp.fs.0.func.23 = edu.usf.csee.cereal.evotransform.nodes.meta.TypeNode
+gp.fs.0.func.23.nc = nc0
+
+gp.fs.0.func.24 = edu.usf.csee.cereal.evotransform.nodes.arithm.AssignNode
+gp.fs.0.func.24.nc = nc2
+
+gp.fs.0.func.25 = edu.usf.csee.cereal.evotransform.nodes.java.DeclWithInitNode
+gp.fs.0.func.25.nc = nc3
+
+gp.fs.0.func.26 = edu.usf.csee.cereal.evotransform.nodes.java.TypeNode
+gp.fs.0.func.26.nc = nc0
+
+gp.fs.0.func.27 = edu.usf.csee.cereal.evotransform.nodes.str.ConcreteSyntaxNode
+gp.fs.0.func.27.nc = nc1
+
+gp.fs.0.func.28 = edu.usf.csee.cereal.evotransform.nodes.str.SingletonNode
+gp.fs.0.func.28.nc = nc1
+
+gp.fs.0.func.29 = edu.usf.csee.cereal.evotransform.nodes.java.VarNode
+gp.fs.0.func.29.nc = nc0
+
+gp.fs.0.func.30 = edu.usf.csee.cereal.evotransform.nodes.meta.InitExprNode
+gp.fs.0.func.30.nc = nc0
+
+gp.fs.0.func.31 = edu.usf.csee.cereal.evotransform.nodes.meta.IncExprNode
+gp.fs.0.func.31.nc = nc0
