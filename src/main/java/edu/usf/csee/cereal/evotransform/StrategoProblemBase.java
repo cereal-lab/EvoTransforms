@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.google.common.io.Files;
+
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
@@ -32,26 +34,36 @@ public abstract class StrategoProblemBase extends GPProblem {
         if (!(input instanceof StrategoGPData))
             state.output.fatal("GPData class must subclass from " + StrategoGPData.class, base.push(P_DATA), null);
 
-        try {
-            stratego = StrategoProxy.create();// can fail
-            String inFolder = Paths.get("data", "in").toString();
-            String inFolderPOC = Paths.get(inFolder, "POC.java").toString();
-            CmdRunner.Output output = CmdRunner.javac(inFolder, inFolderPOC);
+        try {       
+            Parameter strategoParam = base.push("stratego");
+            Parameter strategoLangParam = strategoParam.push("language");
+            String strategoLanguageDir = state.parameters.getString(strategoLangParam, null);
+            Parameter outDirParam = base.push("out");
+            String outDir = state.parameters.getString(outDirParam, null);
+            stratego = StrategoProxy.create(strategoLanguageDir, outDir);// can fail
+            Parameter inDirParam = base.push("in");
+            String inDir = state.parameters.getString(inDirParam, null);
+            Parameter inDirFileParam = inDirParam.push("file"); //TODO: allow several input files and agregate fitness
+            String inFile = state.parameters.getString(inDirFileParam, null);
+            //String inFolder = Paths.get("data", "in").toString();
+            //String inFolderPOC = Paths.get(inFolder, "POC.java").toString();
+            CmdRunner.Output output = CmdRunner.javac(inDir, inFile);
             if (output.code != 0) {
-                logger.error("Provided POC is incorrect: {}", 
+                logger.error("Provided input Java file is incorrect: {}", 
                     output.err.stream().collect(Collectors.joining(System.lineSeparator())));
-                state.output.fatal("Provided POC is incorrect");
+                state.output.fatal("Provided input Java file is incorrect");
                 System.exit(1);
             }
-            output = CmdRunner.java(inFolder, "POC", 0);       
+            String className = Files.getNameWithoutExtension(inFile);
+            output = CmdRunner.java(inDir, className, 0);       
             if (output.code != 0)  {
-                logger.error("Provided POC runtime error: {}", 
+                logger.error("Provided input file has runtime error: {}", 
                     output.err.stream().collect(Collectors.joining(System.lineSeparator())));
-                state.output.fatal("Provided POC runtime error");
+                state.output.fatal("Provided input file has runtime error");
                 System.exit(1);
             }
             expectedOutput = output.out;
-            String inLog = Paths.get(inFolder, "java.log").toString();
+            String inLog = Paths.get(inDir, "java.log").toString();
             output.preserve(inLog);
         } catch (Exception e) {
             logger.error("Creation of StrategoProxy failed: {}", e);

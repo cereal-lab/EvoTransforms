@@ -1,0 +1,5 @@
+?|[ 
+    for (~type ~x = ~initExpr;~cond;~inc) {
+        ~stms*
+    }
+]|; //match-for gp node

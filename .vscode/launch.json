@@ -19,7 +19,11 @@
             "name": "StrategoProxy (test strj)",
             "request": "launch",
             "mainClass": "edu.usf.csee.cereal.evotransform.StrategoProxy",
-            "projectName": "evotransform"
+            "projectName": "evotransform",
+            "args": [
+                "data/lang", 
+                "data/out"
+            ]
         },
         {
             "type": "java",
@@ -35,10 +39,10 @@
             "mainClass": "edu.usf.csee.cereal.evotransform.TransformRunner",
             "projectName": "evotransform",
             "args": [
-                "liang10e\\exercises", 
+                "liang10e/exercises", 
                 "Exercise0*[4-8]_0*(?:\\d*)(?:Extra)?.java",
-                "lib\\lang.java-1.1.0-SNAPSHOT.spoofax-language",
-                "stats:liang10e\\exercises\\OCURRENCES.csv",
+                "lib/lang.java-1.1.0-SNAPSHOT.spoofax-language",
+                "stats:data/OCURRENCES.csv",
                 "A1:e-stats-occurrences-caceffo-A1-scanf",
                 "A2:e-stats-occurrences-caceffo-A2",
                 "A3:e-stats-occurrences-caceffo-A3",

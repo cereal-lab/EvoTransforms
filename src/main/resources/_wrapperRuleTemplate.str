@@ -1,0 +1,4 @@
+(node, _, _, path, project-path) -> (filename, result)
+with
+filename := <guarantee-extension(|"mod.jav")> path
+; result   := <oncetd(gp-poc); normalizeList; pp-debug> node      

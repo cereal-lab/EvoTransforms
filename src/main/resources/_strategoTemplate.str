@@ -1,0 +1,12 @@
+module custom
+imports
+  src-gen/signatures/metaborg-java-sig
+rules
+
+gp-poc =   
+?|[ 
+    for (~type ~x = ~initExpr;~cond;~inc) {
+        ~stms*
+    }
+]|; //match-for gp node
+![]

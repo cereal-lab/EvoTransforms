@@ -1,0 +1,26 @@
+module custom
+imports
+  src-gen/signatures/metaborg-java-sig
+  libspoofax/term/origin
+  pp
+	
+rules
+
+gp-poc =  
+	?|[ 
+	    for (~type ~x = ~initExpr;~cond;~inc) {
+			~stms*
+		}
+	]|; //match-for gp node
+	![
+		|[ 
+		~type ~x = ~initExpr; 
+		]|,
+		|[
+			while(~cond)
+			{
+				~stms*
+				~inc;
+			}		
+		]|
+	]

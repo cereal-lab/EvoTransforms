@@ -88,7 +88,7 @@ public final class TransformRunner {
         String languagePath = args[2];
         String mode = args[3]; // trans for actual transforms and stats:<fileName> for statistics
 
-        List<String[]> transforms = Arrays.stream(args).skip(3).map(name -> {
+        List<String[]> transforms = Arrays.stream(args).skip(4).map(name -> {
             String[] splitted = name.split(":");
             return new String[] { splitted[0], splitted.length > 1 ? splitted[1] : splitted[0] };
         }).collect(Collectors.toList());
@@ -106,7 +106,7 @@ public final class TransformRunner {
                 System.err.format("[TransformRunner] No language at %s", languagePath);
                 System.exit(1);
             }
-            System.out.format("[TransformRunner] Loaded %s", language.toString());
+            System.out.format("[TransformRunner] Loaded %s%n", language.toString());
 
             // final String folder = "liang10e\\exercises";
             final File casesFolder = new File(casesFolderString);

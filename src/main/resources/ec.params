@@ -138,7 +138,14 @@ gp.adf-stack.context = ec.gp.ADFContext
 eval.problem = ec.gp.ge.GEProblem
 eval.problem.problem = edu.usf.csee.cereal.evotransform.StrategoBatchGPProblem
 eval.problem.problem.data = edu.usf.csee.cereal.evotransform.nodes.StrategoGPData
-
+#
+#unziped folder of Spoofax which we modify
+eval.problem.problem.stratego.language = data/lang
+#
+#input java code
+eval.problem.problem.in = data/in
+eval.problem.problem.in.file = data/in/POC.java
+eval.problem.problem.out = data/out
 
 # PIPELINE - THIS PIPELINE FOR GP - but WE USE GE
 #MultiBreedingPipeline takes randomly from two sources according to prob
