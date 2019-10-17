@@ -16,13 +16,19 @@ public class ConsNode extends GPNode {
         //check if we are unary or binary 
         StrategoGPData strategoScript = ((StrategoGPData)data);
 
-        strategoScript.append("[").right().line()
-            .append("|[").right().line();
+        if (!(this.parent instanceof ConsNode))
+        {
+            strategoScript.append("[").right().line();
+        }
+        strategoScript.append("|[").right().line();
         this.children[0].eval(arg0, arg1, data, arg3, arg4, arg5);
         strategoScript.left().line()
-            .append("]| | ").line();        
-        this.children[1].eval(arg0, arg1, data, arg3, arg4, arg5);
-        strategoScript.left().line().append("]");
+            .append("]|,").line();        
+        this.children[1].eval(arg0, arg1, data, arg3, arg4, arg5);            
+        if (!(this.parent instanceof ConsNode))
+        {
+            strategoScript.left().line().append("]");
+        }
     }
 
     @Override

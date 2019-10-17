@@ -24,7 +24,7 @@ pop.subpop.0.duplicate-retries = 0
 
 #pop.subpop.0.size = 1024
 #random 512 trees
-pop.subpop.0.size = 16
+pop.subpop.0.size = 32
 #elitism is disabled 
 #breed.elite.0 = 0
 breed.elite.0 = 1
@@ -33,7 +33,7 @@ quit-on-run-complete = true
 
 #initialization 
 init = ec.gp.GPInitializer
-generations = 151
+generations = 51
 
 #additional stats - koza stats
 #stat.num-children = 1
@@ -117,8 +117,8 @@ pop.subpop.0.species.mutation-prob = 0.1
 pop.subpop.0.species.crossover-type = one
 
 pop.subpop.0.species.genome-size = uniform
-pop.subpop.0.species.min-initial-size = 30
-pop.subpop.0.species.max-initial-size = 40
+pop.subpop.0.species.min-initial-size = 300
+pop.subpop.0.species.max-initial-size = 300
 
 
 #pop.subpop.0.duplicate-retries = 100
@@ -210,12 +210,12 @@ pop.subpop.0.species.pipe.source.0.source.0.likelihood = 0.9
 pop.subpop.0.species.pipe.source.0.source.0.source.0 = ec.select.TournamentSelection
 pop.subpop.0.species.pipe.source.0.source.0.source.1 = same
 
-#one wrap
-ge.species.passes = 2
+#no wrap
+ge.species.passes = 1
 ge.species.init-scheme = default
 
 # Selection
-select.tournament.size = 5
+select.tournament.size = 3
 
 pop.subpop.0.species.gp-species = ec.gp.GPSpecies
 pop.subpop.0.species.gp-species.fitness = ec.gp.koza.KozaFitness

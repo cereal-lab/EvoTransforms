@@ -61,7 +61,7 @@ public class CmdRunner {
     }
 
     public static Output java(String classPath, String className, int maxLinesOnInfiniteLoop) {
-        return runProgram(String.format("java -cp %s %s", classPath, className), 1000, maxLinesOnInfiniteLoop);
+        return runProgram(String.format("java -cp %s %s", classPath, className), 400, maxLinesOnInfiniteLoop);
     }
 
     public static List<String> collectLimitedOutput(InputStream stream, int maxLines) throws IOException {
@@ -89,6 +89,7 @@ public class CmdRunner {
     public static Output runProgram(String cmd, long timeout, int maxLinesOnInfiniteLoop) {
         try {
             Process pr = Runtime.getRuntime().exec(cmd);
+            Thread.yield(); //give time to created proc (assuming correct scheduling)
             boolean hasTerminated = pr.waitFor(timeout, TimeUnit.MILLISECONDS);
             List<String> out = Collections.emptyList();
             List<String> err = Collections.emptyList();

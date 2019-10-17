@@ -12,6 +12,11 @@ import ec.gp.GPNode;
 
 public class SeqNode extends GPNode {
     private static final long serialVersionUID = 1L;
+    private boolean reverse;
+
+    public SeqNode(boolean reverse) {
+        this.reverse = reverse;
+    }
 
     @Override
     public void eval(EvolutionState arg0, int arg1, GPData data, ADFStack arg3, GPIndividual arg4, Problem arg5) {
@@ -19,11 +24,20 @@ public class SeqNode extends GPNode {
         StrategoGPData strategoScript = ((StrategoGPData)data);
         if (this.children.length > 0)
         {
-            for (int i = 0; i < this.children.length - 1; i++) {
-                this.children[i].eval(arg0, arg1, data, arg3, arg4, arg5);
-                strategoScript.line();
+            if (reverse)
+            {
+                for (int i = this.children.length - 1; i > 0; i--) {
+                    this.children[i].eval(arg0, arg1, data, arg3, arg4, arg5);
+                    strategoScript.line();
+                }
+                this.children[0].eval(arg0, arg1, data, arg3, arg4, arg5);
+            } else {
+                for (int i = 0; i < this.children.length - 1; i++) {
+                    this.children[i].eval(arg0, arg1, data, arg3, arg4, arg5);
+                    strategoScript.line();
+                }
+                this.children[this.children.length - 1].eval(arg0, arg1, data, arg3, arg4, arg5);
             }
-            this.children[this.children.length - 1].eval(arg0, arg1, data, arg3, arg4, arg5);
         }
     }
 

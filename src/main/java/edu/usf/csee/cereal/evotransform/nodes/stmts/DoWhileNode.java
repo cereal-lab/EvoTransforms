@@ -15,10 +15,10 @@ public class DoWhileNode extends GPNode {
         StrategoGPData strategoScript = ((StrategoGPData)data);
         strategoScript.append("do {")
             .right().line();
-        this.children[0].eval(arg0, arg1, data, arg3, arg4, arg5);
+        this.children[1].eval(arg0, arg1, data, arg3, arg4, arg5);            
         strategoScript
             .left().line().append("} while (");
-        this.children[1].eval(arg0, arg1, data, arg3, arg4, arg5);
+        this.children[0].eval(arg0, arg1, data, arg3, arg4, arg5);
         strategoScript.append(");");
     }
 
