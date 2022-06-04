@@ -17,37 +17,38 @@ public class StrategoBatchGPProblem extends StrategoProblemBase {
     private static final long serialVersionUID = 1L;
 
     public static class GenotypeWithPhenotype {
+        public final int indId;
         public final GPIndividual ind;
         public final String strategoScript;
 
-        public GenotypeWithPhenotype(GPIndividual ind, String strategoScript) {
+        public GenotypeWithPhenotype(int indId, GPIndividual ind, String strategoScript) {
+            this.indId = indId;
             this.ind = ind;
             this.strategoScript = strategoScript;
-
         }
     }
 
     public List<GenotypeWithPhenotype> genomesAndPhenomes;
+    public int indIdGlobal; 
 
     @Override
     public void prepareToEvaluate(EvolutionState state, int threadnum) {
         genomesAndPhenomes = new ArrayList<>();
+        indIdGlobal = 0;
     }
     @Override
     public void evaluate(EvolutionState state, Individual ind, int subpopulation, int threadnum) {
         if (!ind.evaluated) {
             StrategoGPData strategoScript = (StrategoGPData) input;
             strategoScript.init();
-            strategoScript.append("!"); // evolution of transforms only
             GPIndividual gpInd = (GPIndividual) ind;
             gpInd.trees[0].child.eval(state, threadnum, strategoScript, stack, gpInd, this);
             // here we have our collected code
             //1: form stratego script 
             String modification = strategoScript.toString(); // should be list according to s.grammar from resources
-
             //NOTE: not thread safe!!!!!
-            genomesAndPhenomes.add(new GenotypeWithPhenotype(gpInd, modification));
-        }        
+            genomesAndPhenomes.add(new GenotypeWithPhenotype(indIdGlobal++, gpInd, modification));
+        }
     }
 
     @Override
@@ -62,13 +63,14 @@ public class StrategoBatchGPProblem extends StrategoProblemBase {
         //5: run built transformation on input program 
         //6: save transformed result to a file 
         Exception e = stratego.runModifications(genomesAndPhenomes
-            .stream().map(gp -> gp.strategoScript)
+            .stream().map(gp -> 
+                new StrategoProxy.Modification(gp.indId, this.replaceWhat, gp.strategoScript))
             .collect(Collectors.toList()), prefix);
         if (e == null) {
-            for (int i = 0; i < genomesAndPhenomes.size(); i++)
+            for (GenotypeWithPhenotype genomeAndPhenome: genomesAndPhenomes)
             {
                 double fitness = 0; // 0 is the best - infinity is the worst
-                String outFolder = Paths.get(stratego.getOutFolder(), prefix, String.valueOf(i)).toString();
+                String outFolder = Paths.get(stratego.getOutFolder(), prefix, String.valueOf(genomeAndPhenome.indId)).toString();
                 String javaFile = Paths.get(outFolder, "POC.java").toString();
                 //7: compile result with java 
                 CmdRunner.Output output = CmdRunner.javac(outFolder, javaFile);
@@ -104,7 +106,7 @@ public class StrategoBatchGPProblem extends StrategoProblemBase {
                     logger.error("javac failed: {}", e);
                     fitness = JAVA_COMPILATION_FAIL_FITNESS;
                 }
-                GPIndividual ind = genomesAndPhenomes.get(i).ind;
+                GPIndividual ind = genomeAndPhenome.ind;
                 // set the fitness and the evaluated flag
                 KozaFitness f = (KozaFitness)(ind.fitness);
                 f.setStandardizedFitness(state, fitness);

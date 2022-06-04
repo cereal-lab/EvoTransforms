@@ -1,3 +1,6 @@
+# generative grammar v1.0
+# generating replacement part of transformaiton
+#
 <start> ::= (strCons <initialDeclStmt> <termStrList>)
 #
 # 50/50 chances to have single instruction or more
@@ -7,16 +10,16 @@
 <termStmt> ::= <termIfStmt> | <termIfStmt> | <termIfStmt> | <termWhileStmt> | <termWhileStmt> | <termWhileStmt>
 <termIfStmt> ::= (if <boolExpr> <termStmts>) | (if <boolExpr> <termStmts>) | (ifElse <boolExpr> <termStmts> <stmts>) | (ifElse <boolExpr> <stmts> <termStmts>) 
 <termWhileStmt> ::= (while <boolExpr> <termLoopStmts>) | (doWhile <boolExpr> <termLoopStmts>)
-#
+# 
 #
 #here we increase chance of term node metaStmtsRule
 # chances for append/prepend is 2 of 3
 #
 # chances to terminate is 1 of 2
-<termStmts> ::= <metaStmtsRule> | <termStmt> | (prepend <stmt> <termStmts>) | (append <stmt> <termStmts>)
+<termStmts> ::= <metaStmtsRule> | <termStmt> | (prepend <stmt> <nl> <termStmts>) | (append <stmt> <nl> <termStmts>)
 #
 # chances to terminate is 1 of 2
-<termLoopStmts> ::= <metaStmtsRule> | <termLoopStmt> | (prepend <loopStmt> <termLoopStmts>) | (append <loopStmt> <termLoopStmts>)
+<termLoopStmts> ::= <metaStmtsRule> | <termLoopStmt> | (prepend <loopStmt> <nl> <termLoopStmts>) | (append <loopStmt> <nl> <termLoopStmts>)
 #
 <termLoopStmt> ::= <termLoopIfStmt> | <termLoopIfStmt> | <termLoopIfStmt> | <termLoopWhileStmt> | <termLoopWhileStmt> | <termLoopWhileStmt>
 <termLoopIfStmt> ::= (if <boolExpr> <termLoopStmts>) | (if <boolExpr> <termLoopStmts>) | (ifElse <boolExpr> <termLoopStmts> <loopStmts>) | (ifElse <boolExpr> <loopStmts> <termLoopStmts>)
@@ -63,7 +66,7 @@
 <stmtWhileRec> ::= (while <boolExpr> <loopStmts>) | (doWhile <boolExpr> <loopStmts>)
 <castableToStmt> ::= <assignExpr> | (incExpr)
 #
-<stmts> ::= (metaStmts) | <stmt> | (prepend <stmt> <stmts>) | (append <stmt> <stmts>)
+<stmts> ::= (metaStmts) | <stmt> | (prepend <stmt> <nl> <stmts>) | (append <stmt> <nl> <stmts>)
 #
 #building grammar in reverse order 
 #based on requirement that metaStmts should mandatory be in our tree
@@ -78,4 +81,6 @@
 <loopStmtBreak> ::= (break) | (continue)
 <loopStmtTerm> ::= (toStmt <castableToStmt>) | (toStmt <castableToStmt>) | (toStmt <castableToStmt>) | <loopStmtBreak>
 #
-<loopStmts> ::= (metaStmts) | <loopStmt> | (prepend <loopStmt> <loopStmts>) | (append <loopStmt> <loopStmts>)
+<loopStmts> ::= (metaStmts) | <loopStmt> | (prepend <loopStmt> <nl> <loopStmts>) | (append <loopStmt> <nl> <loopStmts>)
+#
+<nl> ::= (nl)

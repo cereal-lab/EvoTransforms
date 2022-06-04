@@ -1,0 +1,45 @@
+#this is proposal of generative grammar which creates trees with bottom up and top down approaches combined 
+#the goal is to make search space less sparse and elliminate trees which for sure have bad fitness on stage of tree build 
+#therefore schema of GP tree generation which differs from GE is proposed 
+
+# We want to maintain similar syntax to original GE grammar but at same time:
+#    1. Rules of type <x> ::= <option1> | <option2> ... now have annotations for options to include probabilities to be selected  
+#       Example:
+#            <expr> ::= (+ <expr> <expr> :w 0.25) | (* <expr> <expr> :w 0.5)  | (num) 
+#       here after :w we specify the weight of rule (or opts in general) - could be optional and should be from 0 to 1 
+#       Now we do not use mod for selection of case but option is selected as next. 
+#       The range [0, max) of int val is proportionally divided according to weights and the rank of the range in which int value is defines the index of choice
+#       Example:
+#            max = 100, int val is from 0 to 99. int val 32 is in range with rank 1 [26, 76) - therefore (* _ _) is selected 
+#       Mutation randomly shuffle int or could change int in some distance from cur val. Epistasis is still present.
+#       To avoid epistasis we can extend grammar with skip notation which defines how many next ints should be skipped
+#       Example:
+#            <expr> = (+ <expr> <expr> :w 0.25) | (* <expr> <expr> :w 0.5) | (num :skip 2)
+#       Skipped ints are still considered in round robin fashion - int is not vector but list and on each step if skip present, puts int at back for later processing 
+#       This allow manualy control epistasis, or it could be configured with skip:auto to detect how many ints should be skipped 
+
+#    2. Rules of type [x]:[type_1_of_x],[type_2_of_x]... where x is term and type_i_of_x is category of terms
+#       Example:
+#            [~x]: [IntVar], [IntExpr]
+#       Relation : defines meta-typing which allows us to extend terms in bottom-up way (see next rule)
+#       Category here is kind of similar to rule <expr> where expr defines category. We can have [~x]:[expr] for example 
+#       These rules are used for initial islands from which we need to generate tree.
+#       Islands are terms which are mandatory to be present in generated tree.
+#       The actual question is how can we combine islands together to form final tree.
+#       Currently we consider case in which generation process stops when all islands are connected - this is enough for pattern matching strategy 
+#       Other way for generation could stop is when grown island reaches concrete form, but mechanisms should exist which push the growth towards necessary form. 
+#       Example of islands:
+#            [x]: [expr]
+#            [1]: [expr]
+#       - two initial islands - possible generated term is (x + 2)*1, but x + 2 itself is considered intermediate form 
+#    3. Rules of type [type_or_term_1] => (+ [type_or_term_1] <expr> :w 0.25): [type_1_of_new_term], [type_2_of_new_term] ...
+#       Specifies how terms of category could expand bottom-up. RHS [type_or_term_1] specifies position where original term should be placed 
+#       Example:
+#            [expr] => (+ [expr] <expr> :w 0.25): [expr] | (* [expr] <expr> :w 0.5): [expr]
+#       These rules are applied to islands which grow. Assume that we have islands from prev example and [x] was picked.
+#       System searches all possible expansions which could be applied to [x]
+#       1. There are no rules of form [x] => ... 
+#       2. But [x]:[expr] so we search for rules [expr] => ...
+#       3. We pick first rule in prev example.
+#       New island is (+ [x] <expr>): [expr] which replaces [x]:[expr]
+#       Here <expr> could be expended in top-down fashion with ::= rules from 1. 

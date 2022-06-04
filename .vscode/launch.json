@@ -20,7 +20,8 @@
             "request": "launch",
             "mainClass": "edu.usf.csee.cereal.evotransform.StrategoProxy",
             "projectName": "evotransform",
-            "args": [
+            "vmArgs": "-Xss16m",
+            "args": [                
                 "data/lang", 
                 "data/out"
             ]
@@ -30,7 +31,8 @@
             "name": "StartegoEvolution",
             "request": "launch",
             "mainClass": "edu.usf.csee.cereal.evotransform.StartegoEvolution",
-            "projectName": "evotransform"
+            "projectName": "evotransform",
+            "vmArgs": "-Xss16m",
         },        
         {
             "type": "java",

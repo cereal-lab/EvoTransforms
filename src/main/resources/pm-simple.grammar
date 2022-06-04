@@ -1,0 +1,57 @@
+#generative grammar v2.0 
+
+#we use the approach when we match 1 statement at a time OR match the expression 
+#simple match before fixed replacement 
+#constraints: (very small search space) 
+#   one pattern match ?|[]|
+#   fixed set of metavariables (in a form of precoded pools - see node PoolNode)
+#   no Stratego strategies ?|[]  
+#   replacement part is not generated (it is hardcoded)
+#   no complex expressions - metavars at top level
+#
+#
+<start> ::= <match>
+#
+#       ?_ Stratego combinator
+<match> ::= (match <pattern>) 
+#
+#       pattern could be statement/expression/metaName - further extension on class members 
+<pattern> ::= <stmt> 
+#
+#       Java concrete syntax statements with metas 
+<stmt> ::= <if> | <ifElse> | <while> | <for> | <doWhile> 
+#
+#       if and ifElse statement
+<if> ::= (if <boolExpr> <stmts>)
+<ifElse> ::= (ifElse <boolExpr> <stmts> <stmts>)
+#
+#       while and doWhile with same ordering of exprs (for reducing ripple effect)
+<while> ::= (while <boolExpr> <stmts>)
+<doWhile> ::= (doWhile <boolExpr> <stmts>)
+#
+#       for loop, forInit is presented in grammar in strange way so we cannot capture it at once 
+<for> ::= (for <forInit> <boolExpr> <forInc> <stmts>)
+#       empty renders empty string in script
+<forInit> ::= (empty) | (forInit <metaType> <forInitVars>)
+<forInitVars> ::= <forInitVar> | (prepend <forInitVar> <comma> <forInitVars>)
+<forInitVar> ::= (assign <metaVar> <metaExpr>)
+#
+#       note - we do not decompose them yet - next generalisation will allow pattern match subexpressions 
+<forInc> ::= <metaExpr>
+#
+#       note - this is invariant for now - stmts could not be matched at once 
+<stmts> ::= <metaStmts>
+#       for now just simple metavariable
+<boolExpr> ::= <metaCondExpr>
+#
+#       metas by group
+<metaVar> ::= (metaVar)
+<metaCondExpr> ::= (metaCondExpr)
+<metaExpr> ::= (metaExpr)
+<metaType> ::= (metaType)
+<metaStmts> ::= (metaStmts)
+#
+<comma> ::= (comma)
+<nl> ::= (nl)
+#
+# new GP nodes (relative to v1.0): match, for, forInit 

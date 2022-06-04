@@ -1,5 +1,6 @@
 package edu.usf.csee.cereal.evotransform;
 
+import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,6 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.google.common.io.Files;
+import com.google.common.io.Resources;
 
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
@@ -14,6 +16,7 @@ import org.metaborg.util.log.LoggerUtils;
 import ec.EvolutionState;
 import ec.gp.GPProblem;
 import ec.util.Parameter;
+import edu.usf.csee.cereal.evotransform.StrategoProxy.Modification;
 import edu.usf.csee.cereal.evotransform.nodes.StrategoGPData;
 
 public abstract class StrategoProblemBase extends GPProblem {
@@ -22,6 +25,7 @@ public abstract class StrategoProblemBase extends GPProblem {
     StrategoProxy stratego;
     ILogger logger = LoggerUtils.logger(StrategoGPProblem.class);
     List<String> expectedOutput;
+    String replaceWhat;
     // possible fintesses:
     // 1. output comparison (or tests) - this is current
     // 2. source code comparison (tree or string)
@@ -38,9 +42,26 @@ public abstract class StrategoProblemBase extends GPProblem {
             Parameter strategoParam = base.push("stratego");
             Parameter strategoLangParam = strategoParam.push("language");
             String strategoLanguageDir = state.parameters.getString(strategoLangParam, null);
+            Parameter replaceWhatParam = base.push("replaceWhat");
+            replaceWhat = state.parameters.getString(replaceWhatParam, null);
+            Parameter strategoFileTimeplateParam = strategoParam.push("fileTemplate");
+            String strategoFileTimeplate = state.parameters.getString(strategoFileTimeplateParam, null);
+            Parameter strategoStrategyTemplateParam = strategoParam.push("strategyTemplate");
+            String strategyTemplate = state.parameters.getString(strategoStrategyTemplateParam, null);
             Parameter outDirParam = base.push("out");
             String outDir = state.parameters.getString(outDirParam, null);
-            stratego = StrategoProxy.create(strategoLanguageDir, outDir);// can fail
+
+            Parameter preModificationParam = base.push("preModification");
+            Parameter preModificationReplaceWhatParam = preModificationParam.push("replaceWhat");
+            String preModificationReplaceWhat = state.parameters.getString(preModificationReplaceWhatParam, null);
+            Modification preModification = null;
+            if (preModificationReplaceWhat != null) {
+                Parameter preModificationModificationParam = preModificationParam.push("modification");
+                String preModificationModificationResource = state.parameters.getString(preModificationModificationParam, null);
+                String preModificationModification = Resources.toString(Resources.getResource(preModificationModificationResource), Charset.forName("UTF-8"));
+                preModification = new Modification(-1, preModificationReplaceWhat, preModificationModification);
+            }
+            stratego = StrategoProxy.create(strategoLanguageDir, outDir, strategoFileTimeplate, strategyTemplate, preModification);// can fail
             Parameter inDirParam = base.push("in");
             String inDir = state.parameters.getString(inDirParam, null);
             Parameter inDirFileParam = inDirParam.push("file"); //TODO: allow several input files and agregate fitness

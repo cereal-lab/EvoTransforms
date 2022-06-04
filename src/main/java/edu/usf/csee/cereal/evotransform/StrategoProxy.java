@@ -39,28 +39,28 @@ public class StrategoProxy {
 
     private String langDir;
     private String fileTemplate;
-    private String initialMatchTemplate;
+    private String strategyTemplate;
     private IStrategoTerm input;
     private IContext outContext;
     private String outContextFolder;
-    private String wrapperRuleTemplate;
 
-    private StrategoProxy(String langDir, String fileTemplate, String initialMatchTemplate, String wrapperRuleTemplate,
+    private StrategoProxy(String langDir, String fileTemplate,  String strategyTemplate, Modification preModificaiton,
             IStrategoTerm input, IContext outContext, String outContextFolder) {
         this.langDir = langDir;
         this.fileTemplate = fileTemplate;
-        this.initialMatchTemplate = initialMatchTemplate;
-        this.wrapperRuleTemplate = wrapperRuleTemplate;
+        this.strategyTemplate = strategyTemplate;
+        if (preModificaiton != null) {
+            this.strategyTemplate = this.strategyTemplate.replace(preModificaiton.replaceWhat, preModificaiton.modification);
+        }
         this.input = input;
         this.outContext = outContext;
         this.outContextFolder = outContextFolder;
     }
-    public static StrategoProxy create(String langDir, String outDir) throws IOException, MetaborgException {
+    public static StrategoProxy create(String langDir, String outDir, String fileTemplateName, String strategyTemplateName, Modification preModifiction) throws IOException, MetaborgException {
         //String langDir = Paths.get("data", "lang").toAbsolutePath().toString();
         Charset utf8 = Charset.forName("UTF-8");
-        String fileTemplate = Resources.toString(Resources.getResource("_strategoTemplate.str"), utf8);
-        String initialMatchTemplate = Resources.toString(Resources.getResource("_initialMatchTemplate.str"), utf8);
-        String wrapperRuleTemplate = Resources.toString(Resources.getResource("_wrapperRuleTemplate.str"), utf8);
+        String fileTemplate = Resources.toString(Resources.getResource(fileTemplateName), utf8);
+        String strategyTemplate = Resources.toString(Resources.getResource(strategyTemplateName), utf8);
         IStrategoTerm input;
         IContext outContext;
         try (Spoofax spoofax = new Spoofax(new CustomInjectModule())) {
@@ -72,7 +72,7 @@ public class StrategoProxy {
             outContext = spoofax.contextService.get(outProj.location(), outProj, java); // output.source()
         }
 
-        return new StrategoProxy(langDir, fileTemplate, initialMatchTemplate, wrapperRuleTemplate, input, outContext, outDir);
+        return new StrategoProxy(langDir, fileTemplate, strategyTemplate, preModifiction, input, outContext, outDir);
     }
 
     public String getOutFolder() {
@@ -98,6 +98,17 @@ public class StrategoProxy {
         }
     }
 
+    public static class Modification {
+        public final int id; 
+        public final String replaceWhat;
+        public final String modification; 
+        public Modification(int id, String replaceWhat, String modification) {
+            this.id = id;
+            this.replaceWhat = replaceWhat;
+            this.modification = modification;
+        }
+    }
+
     /**
      * @param args
      * args[0] - folder with language to modification
@@ -105,7 +116,7 @@ public class StrategoProxy {
      */
     public static void main(String[] args) {
         try {
-            StrategoProxy proxy = StrategoProxy.create(args[0], args[1]);
+            StrategoProxy proxy = StrategoProxy.create(args[0], args[1], args[2], args[3], null); //TODO - premodification
 
             String[][] tests = 
                 new String[][] {
@@ -144,15 +155,15 @@ public class StrategoProxy {
 
     }
 
-    public Exception runModifications(List<String> modifications, String prefix) {
+    public Exception runModifications(List<Modification> modifications, String prefix) {
         try (Spoofax spoofax = new Spoofax(new CustomInjectModule())) {
             StringBuilder strategiesBuilder = new StringBuilder();
-            for (int i = 0; i < modifications.size(); i++)
+            for (Modification modification: modifications)
             {
-                String strategy = String.format("gp-ind-%d =%n%s%n%s", i, initialMatchTemplate, modifications.get(i));
+                String strategy = 
+                    strategyTemplate.replace("strategy-template", String.format("gp-ind-%d", modification.id))
+                        .replace(modification.replaceWhat, modification.modification);
                 strategiesBuilder.append(strategy).append(System.lineSeparator()).append(System.lineSeparator());
-                String eRule = String.format("e-gp-ind-%d:%n%s%n", i, wrapperRuleTemplate.replace("gp-poc", String.format("gp-ind-%d", i)));
-                strategiesBuilder.append(eRule).append(System.lineSeparator()).append(System.lineSeparator());
             }
             String strategies = strategiesBuilder.toString();
             String customStr = String.format("%s%n%n%s", fileTemplate, strategies);
@@ -164,11 +175,11 @@ public class StrategoProxy {
             StrategoOutput buildOut = buildStratego(spoofax, langDir);
             buildOut.preserve(Paths.get(outContextFolder, prefix, "strj.log").toString());
             ILanguageImpl java = loadLanguage(spoofax, langDir);
-            for (int i = 0; i < modifications.size(); i++) {
-                Path indPath = Paths.get(outContextFolder, prefix, String.valueOf(i));
+            for (Modification modification: modifications) {
+                Path indPath = Paths.get(outContextFolder, prefix, String.valueOf(modification.id));
                 indPath.toFile().mkdirs();
                 String indPrefix = indPath.toString();
-                String transformName = String.format("e-gp-ind-%d", i);
+                String transformName = String.format("e-gp-ind-%d", modification.id);
                 StrategoOutput runOutput = runTransform(spoofax, java, transformName, indPrefix);            
                 runOutput.preserve(Paths.get(indPrefix, "e-gp-poc.log").toString());
             }
@@ -190,7 +201,7 @@ public class StrategoProxy {
             StrategoOutput buildOut = buildStratego(spoofax, langDir);
             buildOut.preserve(Paths.get(outContextFolder, prefix, "strj.log").toString());
             ILanguageImpl java = loadLanguage(spoofax, langDir);
-            StrategoOutput runOutput = runTransform(spoofax, java, "e-gp-poc", prefix);            
+            StrategoOutput runOutput = runTransform(spoofax, java, "e-gp-poc", Paths.get(outContextFolder, prefix).toString());            
             runOutput.preserve(Paths.get(outContextFolder, prefix, "e-gp-poc.log").toString());
             return null;
         } catch (IOException | MetaborgException e) {
@@ -266,12 +277,27 @@ public class StrategoProxy {
         final File cacheDir = Paths.get(languageDir, "target", "stratego-cache").toFile();
 
 
+        //strj 
+        //-i /home/dvitel/sw/StrategoJavaLib/trans/metaborg_java.str 
+        //-o /home/dvitel/sw/StrategoJavaLib/target/metaborg/stratego.ctree 
+        //-p lang.java.trans --library --clean 
+        //-I /home/dvitel/sw/StrategoJavaLib/trans 
+        //-I /home/dvitel/sw/StrategoJavaLib/src-gen -I /home/dvitel/sw/StrategoJavaLib 
+        //-I /home/dvitel/sw/spoofax/spoofax/plugins/meta.lib.spoofax.eclipse_2.5.9/target/unpacked/latest/trans 
+        //--cache-dir /home/dvitel/sw/StrategoJavaLib/target/stratego-cache 
+        //-la stratego-lib -la stratego-sglr -la stratego-gpp 
+        //-la stratego-xtc -la stratego-aterm -la stratego-sdf -la strc -F
+
         final Arguments arguments = new Arguments().addFile("-i", strategoFile) // input.inputFile)
                 .addFile("-o", output) // input.outputPath)
-                .addLine("-p lang.java.trans").add("--library").add("--clean").addFile("-I", includeSrcGen)
-                .addFile("-I", includeTrans).addFile("-I", includeBase) // lib src-gen trans .
+                .addLine("-p lang.java.trans").add("--library").add("--clean")
+                .addFile("-I", includeTrans)
+                .addFile("-I", includeSrcGen)
+                .addFile("-I", includeLib)
+                .addFile("-I", includeBase) // lib src-gen trans .
                                                                         // target\replicate\strj-includes)
-                .addFile("-I", includeLib).addFile("--cache-dir", cacheDir).add("-la", "stratego-lib")
+                // .addFile("-I", Paths.get("/home/dvitel/sw/spoofax/spoofax/plugins/meta.lib.spoofax.eclipse_2.5.9/target/unpacked/latest/trans").toFile())
+                .addFile("--cache-dir", cacheDir).add("-la", "stratego-lib")
                 .add("-la", "stratego-sglr").add("-la", "stratego-gpp").add("-la", "stratego-xtc")
                 .add("-la", "stratego-aterm").add("-la", "stratego-sdf").add("-la", "strc").add("-F");
         // .add("-O", 1); //no effect on performance

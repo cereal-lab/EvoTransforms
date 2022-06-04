@@ -13,7 +13,7 @@
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
-            <version>4.2.2</version>
+            <version>4.2.3</version>
         </dependency>
         <dependency>
             <groupId>edu.gmu.cs</groupId>
@@ -29,12 +29,12 @@
         <dependency>
             <groupId>org.metaborg</groupId>
             <artifactId>org.metaborg.spoofax.core</artifactId>
-            <version>2.5.7</version>
+            <version>2.5.9</version>
         </dependency>
         <dependency>
             <groupId>org.metaborg</groupId>
             <artifactId>org.metaborg.spoofax.meta.core</artifactId>
-            <version>2.5.7</version>
+            <version>2.5.9</version>
         </dependency>        
         <dependency>
             <groupId>ch.qos.logback</groupId>

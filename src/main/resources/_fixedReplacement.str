@@ -1,0 +1,9 @@
+![
+	|[ ~type ~x = ~initExpr; ]|,
+	|[
+		while (~cond) {
+			~stms*
+			~inc;
+		}
+	]|
+]

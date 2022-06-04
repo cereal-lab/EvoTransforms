@@ -24,7 +24,7 @@ pop.subpop.0.duplicate-retries = 0
 
 #pop.subpop.0.size = 1024
 #random 512 trees
-pop.subpop.0.size = 32
+pop.subpop.0.size = 38
 #elitism is disabled 
 #breed.elite.0 = 0
 breed.elite.0 = 1
@@ -73,7 +73,7 @@ gp.tc.0.init = ec.gp.koza.HalfBuilder
 #currently we have 21 nodes 
 #ECJ is too verbose
 #we have 0, 1, 2, 3 children nodes - 4 node constraints
-gp.nc.size = 4
+gp.nc.size = 5
 # 0 children
 gp.nc.0 = ec.gp.GPNodeConstraints
 gp.nc.0.name = nc0
@@ -100,6 +100,15 @@ gp.nc.3.size = 3
 gp.nc.3.child.0 = nil
 gp.nc.3.child.1 = nil
 gp.nc.3.child.2 = nil
+# 4 children
+gp.nc.4 = ec.gp.GPNodeConstraints
+gp.nc.4.name = nc4
+gp.nc.4.returns = nil
+gp.nc.4.size = 4
+gp.nc.4.child.0 = nil
+gp.nc.4.child.1 = nil
+gp.nc.4.child.2 = nil
+gp.nc.4.child.3 = nil
 
 # Representation
 pop.subpop.0.species = ec.gp.ge.GESpecies
@@ -124,8 +133,8 @@ pop.subpop.0.species.max-initial-size = 300
 #pop.subpop.0.duplicate-retries = 100
 pop.subpop.0.duplicate-retries = 20
 #grammar
-pop.subpop.0.species.file.0 = s.grammar
-ge.species.file.0 = s.grammar
+pop.subpop.0.species.file.0 = pm-simple.grammar
+ge.species.file.0 = pm-simple.grammar
 
 pop.subpop.0.species.ind.numtrees = 1
 pop.subpop.0.species.ind.tree.0 = ec.gp.GPTree
@@ -141,6 +150,11 @@ eval.problem.problem.data = edu.usf.csee.cereal.evotransform.nodes.StrategoGPDat
 #
 #unziped folder of Spoofax which we modify
 eval.problem.problem.stratego.language = data/lang
+eval.problem.problem.stratego.fileTemplate = _strategoTemplate.str
+eval.problem.problem.stratego.strategyTemplate = _strategyTemplate.str
+eval.problem.problem.replaceWhat = ?|[]|
+eval.problem.problem.preModification.replaceWhat = ![]
+eval.problem.problem.preModification.modification = _fixedReplacement.str
 #
 #input java code
 eval.problem.problem.in = data/in
@@ -236,7 +250,7 @@ pop.subpop.0.species.gp-species.pipe.source.0 = ec.select.TournamentSelection
 
 # Nodes: Function Set
 gp.fs.0 = ec.gp.GPFunctionSet
-gp.fs.0.size = 32
+gp.fs.0.size = 38
 gp.fs.0.func.0 = edu.usf.csee.cereal.evotransform.nodes.arithm.AddNode
 gp.fs.0.func.0.nc = nc2
 
@@ -262,10 +276,10 @@ gp.fs.0.func.7 = edu.usf.csee.cereal.evotransform.nodes.bool.TrueNode
 gp.fs.0.func.7.nc = nc0
 
 gp.fs.0.func.8 = edu.usf.csee.cereal.evotransform.nodes.list.AppendNode
-gp.fs.0.func.8.nc = nc2
+gp.fs.0.func.8.nc = nc3
 
 gp.fs.0.func.9 = edu.usf.csee.cereal.evotransform.nodes.list.PrependNode
-gp.fs.0.func.9.nc = nc2
+gp.fs.0.func.9.nc = nc3
 
 gp.fs.0.func.10 = edu.usf.csee.cereal.evotransform.nodes.meta.ExprNode
 gp.fs.0.func.10.nc = nc0
@@ -332,3 +346,21 @@ gp.fs.0.func.30.nc = nc0
 
 gp.fs.0.func.31 = edu.usf.csee.cereal.evotransform.nodes.meta.IncExprNode
 gp.fs.0.func.31.nc = nc0
+
+gp.fs.0.func.32 = edu.usf.csee.cereal.evotransform.nodes.separators.CommaNode
+gp.fs.0.func.32.nc = nc0
+
+gp.fs.0.func.33 = edu.usf.csee.cereal.evotransform.nodes.separators.NewLineNode
+gp.fs.0.func.33.nc = nc0
+
+gp.fs.0.func.34 = edu.usf.csee.cereal.evotransform.nodes.separators.EmptyNode
+gp.fs.0.func.34.nc = nc0
+
+gp.fs.0.func.35 = edu.usf.csee.cereal.evotransform.nodes.stmts.ForInitNode
+gp.fs.0.func.35.nc = nc2
+
+gp.fs.0.func.36 = edu.usf.csee.cereal.evotransform.nodes.stmts.ForNode
+gp.fs.0.func.36.nc = nc4
+
+gp.fs.0.func.37 = edu.usf.csee.cereal.evotransform.nodes.str.MatchNode
+gp.fs.0.func.37.nc = nc1

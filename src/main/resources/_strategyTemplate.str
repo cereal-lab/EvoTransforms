@@ -1,0 +1,9 @@
+strategy-template=
+    ?|[]|;
+    ![]
+
+e-strategy-template:
+    (node, _, _, path, project-path) -> (filename, result)
+    with
+    filename := <guarantee-extension(|"mod.jav")> path
+    ; result   := <oncetd(strategy-template); normalizeList; pp-debug> node      

@@ -28,13 +28,13 @@ public class SeqNode extends GPNode {
             {
                 for (int i = this.children.length - 1; i > 0; i--) {
                     this.children[i].eval(arg0, arg1, data, arg3, arg4, arg5);
-                    strategoScript.line();
+                    // strategoScript.line();
                 }
                 this.children[0].eval(arg0, arg1, data, arg3, arg4, arg5);
             } else {
                 for (int i = 0; i < this.children.length - 1; i++) {
                     this.children[i].eval(arg0, arg1, data, arg3, arg4, arg5);
-                    strategoScript.line();
+                    // strategoScript.line();
                 }
                 this.children[this.children.length - 1].eval(arg0, arg1, data, arg3, arg4, arg5);
             }

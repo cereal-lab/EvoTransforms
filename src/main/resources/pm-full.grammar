@@ -1,0 +1,61 @@
+<start> ::= (transform <patternList> <replacement>)
+#
+<patternList> ::= <pattern> | (appendPattern <pattern> <setMetaName> <patternList>)
+#
+#here we set internal data to some metavar
+<setContent> ::= (setContent <metaVarOnly>)
+<metaVarOnly> ::= (metaVar)
+#
+#pattern match is not going to go deep - we try to find first occurance of construct 
+#
+<pattern> ::= (match <stmt>) | (oncetd)
+<stmt> ::= <if> | <ifElse> | <while> | <for> | <doWhile> 
+#       | <forEach> 
+<if> ::= (if <boolExpr> <stmts>)
+<ifElse> ::= (ifElse <boolExpr> <stmts> <stmts>)
+<while> ::= (while <boolExpr> <stmts>)
+<doWhile> ::= (doWhile <boolExpr> <stmts>)
+<for> ::= (for <forInit> <metaExprBind> <metaExprBind> <stmts>)
+<forInit> ::= (empty) | (varInit <metaTypeBind> <varList>)
+<varList> ::= <var> | (prepend <var> <varList>)
+<var> ::= (assign <metaVarBind> <metaExprBind>)
+<stmts> ::= (metaStmtsBind) | (metaStmtBind)
+#       <forEach> ::= (foreEach)
+<metaVarBind> ::= (metaVarBind)
+<metaExprBind> ::= (metaExprBind)
+<metaTypeBind> ::= (metaTypeBind)
+<metaStmtBind> ::= (metaStmtBind)
+<metaStmtsBind> ::= (metaStmtsBind)
+<setMetaName> ::= (setMetaName)
+
+
+
+<termWhileStmt> ::= (while <boolExpr> <termLoopStmts>) | (doWhile <boolExpr> <termLoopStmts>)
+#
+<termLoopStmts> ::= <termLoopStmt> | (prepend <loopStmt> <termLoopStmts>) | (append <loopStmt> <termLoopStmts>)
+#
+#patterns:
+#1) usual cf structures - for, if, while, do-while
+#2) metavar t - type 
+#3) metavar x - captures name of var - can be used in non-linear match 
+#4) metavar e - expressions
+#5) metavar s - statement 
+#6) metavar s* - list of statements 
+#7) match on Stratego list - head | tail case - this can lead to problem with matching nth statement - the probability to generate such transform could be low 
+#8) use strategy to find the match in the list - best choice - note that we do not use scope here for metavars (for simplification) - they should be unique 
+#useless pattern matching - some generic check that could be avoiced - trivial example !x; ?x - so we should work on each case more preciselly to eliminate dummy individuals 
+#9) here we do not work with list of functions in class for now - we do not pattern match them 
+#10) adding more complex strategies is possible - check Caseffo repo 
+#
+#
+<boolExpr> ::= <boolExprRec> | <boolMath> | <boolMath> | (metaCondExpr)
+<boolExprRec> ::= (not <boolExpr>) | (and <boolExpr> <boolExpr>)
+<boolMath> ::= (ls <mathExpr> <mathExpr>) | (eq <mathExpr> <mathExpr>)
+<assignExpr> ::= (assign <var> <mathExpr>)
+#
+#<metaVar> ::= <metaVarBind> | (metaMatch <metaVarBind>)
+#
+<metaVarBind> ::= (metVarBind) 
+#
+#for now next op is noop
+<replacement> ::= (empty) 

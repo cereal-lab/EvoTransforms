@@ -6,7 +6,19 @@ rules
 gp-poc =   
 ?|[ 
     for (~type ~x = ~initExpr;~cond;~inc) {
-        ~stms*
+      ~stms*
     }
 ]|; //match-for gp node
 ![]
+
+gp-poc-match =
+?|[ ]|;
+![
+	|[ ~type ~x = ~initExpr; ]|,
+	|[
+		while (~cond) {
+			~stms*
+			~inc;
+		}
+	]|
+]
